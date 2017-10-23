@@ -32,8 +32,13 @@ TypeSpec *Predefined::boolean_type;
 TypeSpec *Predefined::char_type;
 TypeSpec *Predefined::undefined_type;
 TypeSpec *Predefined::complex_type;
+TypeSpec *Predefined::re_type;
+TypeSpec *Predefined::im_type;
 
 // Predefined identifiers.
+SymTabEntry *Predefined::complex_id;
+SymTabEntry *Predefined::re_id;
+SymTabEntry *Predefined::im_id;
 SymTabEntry *Predefined::integer_id;
 SymTabEntry *Predefined::real_id;
 SymTabEntry *Predefined::boolean_id;
@@ -103,6 +108,13 @@ void Predefined::initialize_types(SymTabStack *symtab_stack)
     char_id->set_definition((Definition) DF_TYPE);
     char_id->set_typespec(char_type);
 
+    // Type complex.
+	complex_id = symtab_stack->enter_local("complex");
+	complex_type = TypeFactory::create_type((TypeForm) TF_RECORD);
+	complex_type->set_identifier(complex_id);
+	complex_id->set_definition((Definition) DF_TYPE);
+	complex_id->set_typespec(complex_type);
+
     // Undefined type.
     undefined_type = TypeFactory::create_type((TypeForm) TF_SCALAR);
 }
@@ -129,6 +141,27 @@ void Predefined::initialize_constants(SymTabStack *symtab_stack)
     type_value->v.push_back(true_id);
     boolean_type->set_attribute((TypeKey) ENUMERATION_CONSTANTS,
                                 type_value);
+
+    // Complex variable constant re.
+    re_id = symtab_stack->enter_local("re");
+    re_id->set_definition((Definition) DF_FIELD);
+    re_id->set_typespec(real_type);
+    re_id->set_attribute((SymTabKey) DATA_VALUE,
+							new EntryValue(new DataValue(0)));
+
+	// Complex variable constant im.
+    im_id = symtab_stack->enter_local("im");
+    im_id->set_definition((Definition) DF_FIELD);
+    im_id->set_typespec(real_type);
+    im_id->set_attribute((SymTabKey) DATA_VALUE,
+							new EntryValue(new DataValue(0)));
+
+	// Add re and im to the complex type.
+	TypeValue *type_value2 = new TypeValue();
+	type_value2->v.push_back(re_id);
+	type_value2->v.push_back(im_id);
+	complex_type->set_attribute((TypeKey) RECORD_SYMTAB,
+			type_value2);
 }
 
 void Predefined::initialize_standard_routines(SymTabStack *symtab_stack)
