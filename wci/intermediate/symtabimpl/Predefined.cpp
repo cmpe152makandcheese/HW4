@@ -31,6 +31,7 @@ TypeSpec *Predefined::real_type;
 TypeSpec *Predefined::boolean_type;
 TypeSpec *Predefined::char_type;
 TypeSpec *Predefined::undefined_type;
+TypeSpec *Predefined::complex_type;
 
 // Predefined identifiers.
 SymTabEntry *Predefined::integer_id;
