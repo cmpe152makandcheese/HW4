@@ -142,26 +142,32 @@ void Predefined::initialize_constants(SymTabStack *symtab_stack)
     boolean_type->set_attribute((TypeKey) ENUMERATION_CONSTANTS,
                                 type_value);
 
+	// Add re and im to the complex type.
+	TypeValue *complex_type_value = new TypeValue(symtab_stack->push());
+
     // Complex variable constant re.
     re_id = symtab_stack->enter_local("re");
-    re_id->set_definition((Definition) DF_FIELD);
-    re_id->set_typespec(real_type);
-    re_id->set_attribute((SymTabKey) DATA_VALUE,
-							new EntryValue(new DataValue(0)));
+	re_type = TypeFactory::create_type((TypeForm) TF_SCALAR);
+	re_type->set_identifier(re_id);
+	re_id->set_definition((Definition) DF_FIELD);
+	re_id->set_typespec(re_type);
+	re_id->set_attribute((SymTabKey) DATA_VALUE,
+            new EntryValue(new DataValue(0)));
 
-	// Complex variable constant im.
-    im_id = symtab_stack->enter_local("im");
-    im_id->set_definition((Definition) DF_FIELD);
-    im_id->set_typespec(real_type);
-    im_id->set_attribute((SymTabKey) DATA_VALUE,
-							new EntryValue(new DataValue(0)));
+    // Complex variable constant re.
+	im_id = symtab_stack->enter_local("im");
+	im_type = TypeFactory::create_type((TypeForm) TF_SCALAR);
+	im_type->set_identifier(im_id);
+	im_id->set_definition((Definition) DF_FIELD);
+	im_id->set_typespec(im_type);
+	im_id->set_attribute((SymTabKey) DATA_VALUE,
+            new EntryValue(new DataValue(0)));
 
-	// Add re and im to the complex type.
-	TypeValue *type_value2 = new TypeValue();
-	type_value2->v.push_back(re_id);
-	type_value2->v.push_back(im_id);
+
 	complex_type->set_attribute((TypeKey) RECORD_SYMTAB,
-			type_value2);
+			complex_type_value);
+
+	symtab_stack->pop();
 }
 
 void Predefined::initialize_standard_routines(SymTabStack *symtab_stack)
