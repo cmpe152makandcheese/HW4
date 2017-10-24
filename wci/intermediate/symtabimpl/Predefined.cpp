@@ -147,25 +147,22 @@ void Predefined::initialize_constants(SymTabStack *symtab_stack)
 
     // Complex variable constant re.
     re_id = symtab_stack->enter_local("re");
-	re_type = TypeFactory::create_type((TypeForm) TF_SCALAR);
-	re_type->set_identifier(re_id);
 	re_id->set_definition((Definition) DF_FIELD);
-	re_id->set_typespec(re_type);
+	re_id->set_typespec(real_type);
 	re_id->set_attribute((SymTabKey) DATA_VALUE,
             new EntryValue(new DataValue(0)));
 
     // Complex variable constant re.
 	im_id = symtab_stack->enter_local("im");
-	im_type = TypeFactory::create_type((TypeForm) TF_SCALAR);
-	im_type->set_identifier(im_id);
 	im_id->set_definition((Definition) DF_FIELD);
-	im_id->set_typespec(im_type);
+	im_id->set_typespec(real_type);
 	im_id->set_attribute((SymTabKey) DATA_VALUE,
             new EntryValue(new DataValue(0)));
 
 	complex_type->set_attribute((TypeKey) RECORD_SYMTAB,
 			complex_type_value);
 
+	// Is this needed?
 	symtab_stack->pop();
 }
 

@@ -27,12 +27,27 @@ public:
     static bool is_integer(TypeSpec *typespec);
 
     /**
+	 * Check if a type specification is complex.
+	 * @param typespec the type specification to check.
+	 * @return true if complex, else false.
+	 */
+    static bool is_complex(TypeSpec *typespec);
+
+    /**
      * Check if both type specifications are integer.
      * @param typespec1 the first type specification to check.
      * @param typespec2 the second type specification to check.
      * @return true if both are integer, else false.
      */
     static bool are_both_integer(TypeSpec *typespec1, TypeSpec *typespec2);
+
+    /**
+	 * Check if both type specifications are complex.
+	 * @param typespec1 the first complex specification to check.
+	 * @param typespec2 the second complex specification to check.
+	 * @return true if both are complex, else false.
+	 */
+	static bool are_both_complex(TypeSpec *typespec1, TypeSpec *typespec2);
 
     /**
      * Check if a type specification is real.
