@@ -163,7 +163,6 @@ void Predefined::initialize_constants(SymTabStack *symtab_stack)
 	im_id->set_attribute((SymTabKey) DATA_VALUE,
             new EntryValue(new DataValue(0)));
 
-
 	complex_type->set_attribute((TypeKey) RECORD_SYMTAB,
 			complex_type_value);
 
