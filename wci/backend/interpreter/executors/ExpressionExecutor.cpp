@@ -295,29 +295,13 @@ CellValue *ExpressionExecutor::execute_binary_operator(
     ICodeNode *operand_node1 = children[0];
     ICodeNode *operand_node2 = children[1];
 
+    // Operands.
+    CellValue *cell_value1 = execute(operand_node1);
+    CellValue *cell_value2 = execute(operand_node2);
+    DataValue *operand1  = cell_value1->value;
+    DataValue *operand2  = cell_value2->value;
     TypeSpec  *typespec1 = operand_node1->get_typespec()->base_type();
     TypeSpec  *typespec2 = operand_node2->get_typespec()->base_type();
-
-    bool complex_mode = false;
-
-    if (   (typespec1 == Predefined::complex_type)
-    		|| (typespec2 == Predefined::complex_type))
-	{
-		complex_mode = true;
-	}
-
-    CellValue *cell_value1 = nullptr;
-    CellValue *cell_value2 = nullptr;
-    DataValue *operand1 = nullptr;
-    DataValue *operand2 = nullptr;
-
-    if (complex_mode == false) {
-    	// Operands.
-		cell_value1 = execute(operand_node1);
-		cell_value2 = execute(operand_node2);
-		operand1  = cell_value1->value;
-		operand2  = cell_value2->value;
-    }
 
     CellValue *result_cell_value;
 
@@ -330,21 +314,19 @@ CellValue *ExpressionExecutor::execute_binary_operator(
     {
         integer_mode = true;
     }
-    else if (complex_mode == false) {
-		if (   (   (typespec1 == Predefined::char_type)
-					 || (   (operand1->type == STRING)
-						 && (operand1->s.length() == 1)))
-				 && (   (typespec1 == Predefined::char_type)
-					 || (   (operand1->type == STRING)
-						 && (operand1->s.length() == 1))))
-		{
-			character_mode = true;
-		}
-    	else if (   (operand1->type == STRING)
+    else if (   (   (typespec1 == Predefined::char_type)
+                 || (   (operand1->type == STRING)
+                     && (operand1->s.length() == 1)))
+             && (   (typespec1 == Predefined::char_type)
+                 || (   (operand1->type == STRING)
+                     && (operand1->s.length() == 1))))
+    {
+        character_mode = true;
+    }
+    else if (   (operand1->type == STRING)
              && (operand2->type == STRING))
-		{
-			string_mode = true;
-		}
+    {
+        string_mode = true;
     }
 
     // ====================
@@ -430,103 +412,6 @@ CellValue *ExpressionExecutor::execute_binary_operator(
 
                 default: result_cell_value = nullptr;  // shouldn't get here
             }
-        }
-        else if (complex_mode) {
-        	cout << endl << "DEBUG: I am in a complex operation!" << endl;
-
-        	vector<ICodeNode *> complex_children1 = operand_node1->get_children();
-
-        	cout << "DEBUG: size of vector: " << complex_children1.size() << endl;
-
-			ICodeNode *complex_1_operand_node1 = complex_children1[0];
-			ICodeNode *complex_2_operand_node1 = complex_children1[1];
-
-			CellValue *complex_1_cell_value1 = execute(complex_1_operand_node1);
-			CellValue *complex_1_cell_value2 = execute(complex_2_operand_node1);
-
-			DataValue *complex_operand1 = complex_1_cell_value1->value;
-			DataValue *complex_operand2 = complex_1_cell_value2->value;
-
-			int complex_1_value_re = complex_operand1->i;
-
-			cout << "DEBUG: FOUND RE of the first complex: " << complex_1_value_re << endl;
-
-        	// Extract complex im and re for both operands
-        	switch (node_type)
-			{
-				case NT_ADD:
-				{
-					cout << "DEBUG: Adding complex" << endl;
-//					result_cell_value = new CellValue(value1 + value2);
-					break;
-				}
-
-				case NT_SUBTRACT:
-				{
-					cout << "DEBUG: Subtracting complex" << endl;
-					break;
-				}
-
-				case NT_MULTIPLY:
-				{
-					cout << "DEBUG: Multiply complex" << endl;
-					break;
-				}
-
-				case NT_FLOAT_DIVIDE:
-				{
-					cout << "DEBUG: Div complex" << endl;
-//					// Check for division by zero.
-//					if (value2 != 0)
-//					{
-//						result_cell_value = new CellValue(((float) value1) /
-//														  ((float) value2));
-//					}
-//					else
-//					{
-//						error_handler.flag(node, DIVISION_BY_ZERO, this);
-//						result_cell_value = new CellValue(0.0f);
-//					}
-
-					break;
-				}
-
-				case NT_INTEGER_DIVIDE:
-				{
-					cout << "DEBUG: Div complex" << endl;
-					// Check for division by zero.
-//					if (value2 != 0)
-//					{
-//						result_cell_value = new CellValue(value1/value2);
-//					}
-//					else
-//					{
-//						error_handler.flag(node, DIVISION_BY_ZERO, this);
-//						result_cell_value = new CellValue(0);
-//					}
-
-					break;
-				}
-
-				case NT_MOD:
-				{
-					cout << "DEBUG: Not supported complex" << endl;
-					// Check for division by zero.
-//					if (value2 != 0)
-//					{
-//						result_cell_value = new CellValue(value1%value2);
-//					}
-//					else
-//					{
-//						error_handler.flag(node, DIVISION_BY_ZERO, this);
-//						result_cell_value = new CellValue(0);
-//					}
-
-					break;
-				}
-
-				default: result_cell_value = nullptr;  // shouldn't get here
-			}
         }
         else
         {
