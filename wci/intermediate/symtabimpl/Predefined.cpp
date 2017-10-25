@@ -10,6 +10,7 @@
 #include <vector>
 #include "Predefined.h"
 #include "SymTabEntryImpl.h"
+#include "../SymTabFactory.h"
 #include "../TypeSpec.h"
 #include "../TypeFactory.h"
 #include "../SymTabEntry.h"
@@ -113,6 +114,18 @@ void Predefined::initialize_types(SymTabStack *symtab_stack)
 	complex_type = TypeFactory::create_type((TypeForm) TF_RECORD);
 	complex_type->set_identifier(complex_id);
 	complex_id->set_definition((Definition) DF_TYPE);
+
+	// Prof solution
+	SymTab *csymtab = SymTabFactory::create_symtab(0);
+	SymTabEntry *im_id2 = csymtab->enter("im");
+	SymTabEntry *re_id2 = csymtab->enter("re");
+	re_id2->set_typespec(real_type);
+	im_id2->set_typespec(real_type);
+	re_id2->set_definition((Definition) DF_FIELD);
+	im_id2->set_definition((Definition) DF_FIELD);
+	complex_type->set_attribute((TypeKey) RECORD_SYMTAB,
+									new TypeValue(csymtab));
+
 	complex_id->set_typespec(complex_type);
 
     // Undefined type.
@@ -143,27 +156,26 @@ void Predefined::initialize_constants(SymTabStack *symtab_stack)
                                 type_value);
 
 	// Add re and im to the complex type.
-	TypeValue *complex_type_value = new TypeValue(symtab_stack->push());
+//	TypeValue *complex_type_value = new TypeValue(symtab_stack->push());
+//
+//    // Complex variable constant re.
+//    re_id = symtab_stack->enter_local("re");
+//	re_id->set_definition((Definition) DF_FIELD);
+//	re_id->set_typespec(real_type);
+//	re_id->set_attribute((SymTabKey) DATA_VALUE,
+//            new EntryValue(new DataValue(0)));
+//
+//    // Complex variable constant re.
+//	im_id = symtab_stack->enter_local("im");
+//	im_id->set_definition((Definition) DF_FIELD);
+//	im_id->set_typespec(real_type);
+//	im_id->set_attribute((SymTabKey) DATA_VALUE,
+//            new EntryValue(new DataValue(0)));
+//
+//	complex_type->set_attribute((TypeKey) RECORD_SYMTAB,
+//			complex_type_value);
 
-    // Complex variable constant re.
-    re_id = symtab_stack->enter_local("re");
-	re_id->set_definition((Definition) DF_FIELD);
-	re_id->set_typespec(real_type);
-	re_id->set_attribute((SymTabKey) DATA_VALUE,
-            new EntryValue(new DataValue(0)));
-
-    // Complex variable constant re.
-	im_id = symtab_stack->enter_local("im");
-	im_id->set_definition((Definition) DF_FIELD);
-	im_id->set_typespec(real_type);
-	im_id->set_attribute((SymTabKey) DATA_VALUE,
-            new EntryValue(new DataValue(0)));
-
-	complex_type->set_attribute((TypeKey) RECORD_SYMTAB,
-			complex_type_value);
-
-	// Is this needed?
-	symtab_stack->pop();
+//	symtab_stack->pop();
 }
 
 void Predefined::initialize_standard_routines(SymTabStack *symtab_stack)
