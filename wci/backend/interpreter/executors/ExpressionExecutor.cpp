@@ -163,8 +163,7 @@ CellValue *ExpressionExecutor::execute(ICodeNode *node)
         }
 
         // Must be a binary operator.
-        default: result_cell_value = execute_binary_operator(node,
-                                                             node_type);
+        default: result_cell_value = execute_binary_operator(node, node_type);
     }
 
     return result_cell_value;
@@ -308,12 +307,27 @@ CellValue *ExpressionExecutor::execute_binary_operator(
     bool integer_mode = false;
     bool character_mode = false;
     bool string_mode = false;
+    bool pure_complex_mode = false;
+    bool mixed_complex_mode = false;
 
     if (   (typespec1 == Predefined::integer_type)
         && (typespec2 == Predefined::integer_type))
     {
         integer_mode = true;
     }
+    // Check for COMPLEX types
+    else if(typespec1 == Predefined::complex_type && typespec2 == Predefined::complex_type)
+    {
+        pure_complex_mode = true;
+    }
+    else if ( typespec1 == Predefined::complex_type || typespec2 == Predefined::complex_type )
+    {
+        if(typespec1 == Predefined::integer_type || typespec2 == Predefined::integer_type)
+        {
+            mixed_complex_mode = true;
+        }
+    }
+
     else if (   (   (typespec1 == Predefined::char_type)
                  || (   (operand1->type == STRING)
                      && (operand1->s.length() == 1)))
@@ -409,6 +423,129 @@ CellValue *ExpressionExecutor::execute_binary_operator(
 
                     break;
                 }
+
+                default: result_cell_value = nullptr;  // shouldn't get here
+            }
+        }
+        else if(pure_complex_mode || mixed_complex_mode)
+        {
+            float a = 0, b = 0, c = 0, d = 0, ret_re = 0, ret_im = 0;
+            if(typespec1 == Predefined::complex_type)
+            {
+                a = cell_value1->memory_map->get_cell(
+                                cell_value1->memory_map->get_all_names()[1])
+                                ->get_value()->value->f;
+                b = cell_value1->memory_map->get_cell(
+                                cell_value1->memory_map->get_all_names()[0])
+                                ->get_value()->value->f;
+            }
+            else
+            {
+                a = cell_value1->memory_map->get_cell(
+                                cell_value1->memory_map->get_all_names()[1])
+                                ->get_value()->value->f;
+            }
+            if(typespec2 == Predefined::complex_type)
+            {
+                c = cell_value2->memory_map->get_cell(
+                                cell_value2->memory_map->get_all_names()[1])
+                                ->get_value()->value->f;
+                d = cell_value2->memory_map->get_cell(
+                                cell_value2->memory_map->get_all_names()[0])
+                                ->get_value()->value->f;
+            }
+            else
+            {
+                c = cell_value2->memory_map->get_cell(
+                                cell_value2->memory_map->get_all_names()[1])
+                                ->get_value()->value->f;
+            }
+
+
+            // Integer operations.
+            switch (node_type)
+            {
+                case NT_ADD:
+                {
+                    ret_re = a + c;
+                    ret_im = b + d;
+                    result_cell_value = new CellValue(cell_value2->memory_map);
+                    result_cell_value->memory_map->get_cell(
+                                    result_cell_value->memory_map->get_all_names()[1])
+                                    ->set_value(new CellValue(ret_re));
+                    result_cell_value->memory_map->get_cell(
+                                    result_cell_value->memory_map->get_all_names()[0])
+                                    ->set_value(new CellValue(ret_im));
+                    break;
+                }
+
+                case NT_SUBTRACT:
+                {
+                    ret_re = a - c;
+                    ret_im = b - d;
+                    result_cell_value = new CellValue(cell_value2->memory_map);
+                    result_cell_value->memory_map->get_cell(
+                                    result_cell_value->memory_map->get_all_names()[1])
+                            ->set_value(new CellValue(ret_re));
+                    result_cell_value->memory_map->get_cell(
+                                    result_cell_value->memory_map->get_all_names()[0])
+                            ->set_value(new CellValue(ret_im));
+                    break;
+                }
+
+                case NT_MULTIPLY:
+                {
+                    ret_re = a*c - b*d;
+                    ret_im = a*d + b*c;
+                    result_cell_value = new CellValue(cell_value2->memory_map);
+                    result_cell_value->memory_map->get_cell(
+                                    result_cell_value->memory_map->get_all_names()[1])
+                            ->set_value(new CellValue(ret_re));
+                    result_cell_value->memory_map->get_cell(
+                                    result_cell_value->memory_map->get_all_names()[0])
+                            ->set_value(new CellValue(ret_im));
+                    break;
+                }
+
+                case NT_FLOAT_DIVIDE:
+                {
+                    // Check for division by zero.
+                    if (c == 0 && d == 0)
+                    {
+                        error_handler.flag(node, DIVISION_BY_ZERO, this);
+                        result_cell_value = new CellValue(0.0f);
+                    }
+                    else
+                    {
+                        ret_re = (a*c + b*d) / (c*c + d*d);
+                        ret_im = (b*c - a*d) / (c*c + d*d);
+                        result_cell_value = new CellValue(cell_value2->memory_map);
+                        result_cell_value->memory_map->get_cell(
+                                        result_cell_value->memory_map->get_all_names()[1])
+                                ->set_value(new CellValue(ret_re));
+                        result_cell_value->memory_map->get_cell(
+                                        result_cell_value->memory_map->get_all_names()[0])
+                                ->set_value(new CellValue(ret_im));
+                    }
+
+                    break;
+                }
+
+//                case NT_INTEGER_DIVIDE:
+//                {
+//                    // Check for division by zero.
+//                    if (value2 != 0)
+//                    {
+//                        result_cell_value = new CellValue(value1/value2);
+//                    }
+//                    else
+//                    {
+//                        error_handler.flag(node, DIVISION_BY_ZERO, this);
+//                        result_cell_value = new CellValue(0);
+//                    }
+//
+//                    break;
+//                }
 
                 default: result_cell_value = nullptr;  // shouldn't get here
             }
@@ -678,8 +815,8 @@ CellValue *ExpressionExecutor::execute_binary_operator(
         }
     }
 
-    delete cell_value1;
-    delete cell_value2;
+    //delete cell_value1;
+    //delete cell_value2;
 
     return result_cell_value;
 }
